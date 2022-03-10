@@ -1,8 +1,9 @@
-Shader "Unlit/Unlit"
+Shader "PBRDefault/Unlit"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _Color("Color", color) = (1,1,1,1)
     }
     SubShader
     {
@@ -31,6 +32,7 @@ Shader "Unlit/Unlit"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            float4 _Color;
 
             v2f vert (appdata v)
             {
@@ -44,7 +46,8 @@ Shader "Unlit/Unlit"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                return col;
+                fixed4 finalCol = col * _Color;
+                return finalCol;
             }
             ENDCG
         }

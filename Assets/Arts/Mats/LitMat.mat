@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: UnlitMat
-  m_Shader: {fileID: 4800000, guid: 05b5428cbd8641048ab55f5f6b1f486c, type: 3}
+  m_Name: LitMat
+  m_Shader: {fileID: 4800000, guid: b98e69363a188594e9371904c017d66f, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

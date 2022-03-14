@@ -18,7 +18,7 @@ Shader "PBRDefault/Lit"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            
+            #pragma multi_compile_instancing
 
             #include "UnityCG.cginc"
             #include "PBRLighting.cginc"
@@ -31,6 +31,7 @@ Shader "PBRDefault/Lit"
                 float4 posOS : POSITION;
                 float2 uv : TEXCOORD0;
                 float3 normal:NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
                 
             };
 
@@ -51,7 +52,8 @@ Shader "PBRDefault/Lit"
             VertexOutput vert (VertexInput input)
             {
                 VertexOutput output;
-                
+                UNITY_SETUP_INSTANCE_ID(input);
+
                 output.posCS = UnityObjectToClipPos(input.posOS);
                 output.uv = TRANSFORM_TEX(input.uv, _MainTex);
                 output.normal = UnityObjectToWorldNormal(input.normal);

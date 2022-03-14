@@ -6,6 +6,7 @@ Shader "PBRDefault/Lit"
         _Color("Color", color) = (1,1,1,1)
         _Specular("Spec Color", float) = 1
         _Shinness("Shinness", float) = 1
+        _NormalMap("Normal Map", 2D) = "white"{}
     }
     SubShader
     {
@@ -41,8 +42,8 @@ Shader "PBRDefault/Lit"
                 float3 posWS:TEXCOORD2;
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
+            sampler2D _MainTex, _NormalMap;
+            float4 _MainTex_ST, _NormalMap_ST;
             float4 _Color;
             float _Shinness, _Specular;
             

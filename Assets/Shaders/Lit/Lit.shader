@@ -4,7 +4,7 @@ Shader "PBRDefault/Lit"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color("Color", color) = (1,1,1,1)
-        _Specular("Spec Color", color) = (1,1,1,1)
+        _Specular("Spec Color", float) = 1
         _Shinness("Shinness", float) = 1
     }
     SubShader
@@ -21,52 +21,65 @@ Shader "PBRDefault/Lit"
 
             #include "UnityCG.cginc"
             #include "PBRLighting.cginc"
+            #include "PBRLight.cginc"
+            #include "PBRSurface.cginc" 
             #include "UnityLightingCommon.cginc"
 
-            struct appdata
+            struct VertexInput
             {
-                float4 vertex : POSITION;
+                float4 posOS : POSITION;
                 float2 uv : TEXCOORD0;
                 float3 normal:NORMAL;
+                
             };
 
-            struct v2f
+            struct VertexOutput
             {
                 float2 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
+                float4 posCS : SV_POSITION;
                 float3 normal:TEXCOOR1;
+                float3 posWS:TEXCOORD2;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            float4 _Color, _Specular;
-            float _Shiness;
+            float4 _Color;
+            float _Shinness, _Specular;
             
             
-            v2f vert (appdata v)
+            VertexOutput vert (VertexInput input)
             {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.normal = UnityObjectToWorldNormal(v.normal);
+                VertexOutput output;
+                
+                output.posCS = UnityObjectToClipPos(input.posOS);
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                output.normal = UnityObjectToWorldNormal(input.normal);
+                
+                float4 worldPos = mul(unity_ObjectToWorld, input.posOS);
+                output.posWS = worldPos.xyz;
 
-                return o;
+                return output;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag (VertexOutput input) : SV_Target
             {
-                // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
                 
-                float3 normalDir = normalize(i.normal);
-                normalDir = normalize(normalDir);
+                fixed4 col = tex2D(_MainTex, input.uv);
+                
+                float3 normalDir = normalize(input.normal);
+                
                 
                 float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
                 float3 lightColor = _LightColor0.rgb;
 
-                float3 diffuseColor = CalcuateDiffuseColor(lightColor, normalDir, lightDir);
+                PBRLight pbrLight = CreateLight(lightColor, lightDir);
+                PBRSurface pbrSurface = CreateSurface(normalDir, _Color, _Shinness, _Specular);
 
-                float4 finalCol = col * _Color * float4(diffuseColor,1);
+
+                float3 diffuseColor = CalcuateDiffuseColor(pbrLight, pbrSurface);
+                float3 specColor = CalcualteSpecColor(pbrLight, pbrSurface, _WorldSpaceCameraPos.xyz, input.posWS);
+
+                float4 finalCol = col * pbrSurface.surfaceColor * float4(diffuseColor + specColor,1);
                 return finalCol;
             }
             ENDCG

@@ -48,7 +48,7 @@ float4 FragProgram(VertexOutput input) : SV_Target
     // sample the texture
 	float4 col = tex2D(_MainTex, input.uv);
 
-	RegularLight light = CreateLight(_LightColor0.rgb, _WorldSpaceLightPos0.xyz);
+	RegularLight light = CreateLight(_LightColor0.rgb, _WorldSpaceLightPos0);
 	RegularSurface surface = CreateSurface(input.normal, _Color, _SpecStrength, _Shinness);
 
 	float3 diffuseColor = CalcuateDiffuseColor(surface, light);

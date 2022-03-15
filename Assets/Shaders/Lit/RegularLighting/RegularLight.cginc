@@ -7,16 +7,21 @@ struct RegularLight
 	float3 LightColor;
 	float3 LightDir;
 
+	float LightAtten;
+
 };
 
-RegularLight CreateLight(float3 lightColor, float3 lightPos)
+RegularLight CreateLight(float3 lightColor, float4 lightPos)
 {
 	RegularLight light;
 
 	light.LightColor = lightColor;
-	light.LightPos = lightPos;
-	light.LightDir = normalize(lightPos);
+	light.LightPos = lightPos.xyz;
 
+	if (lightPos.w == 0) 
+	{
+		light.LightDir = normalize(lightPos);
+	}
 	return light;
 }
 

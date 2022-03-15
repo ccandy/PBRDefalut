@@ -3,7 +3,8 @@
 
 #include "UnityLightingCommon.cginc"
 #include "PBRSurface.cginc"
-
+#include "PBRLight.cginc"
+#include "PBRLighting.cginc"
 
 struct VertexInput
 {
@@ -17,30 +18,47 @@ struct VertexInput
 struct VertexOutput
 {
     float2 uv : TEXCOORD0;
-	//float3 normal:TEXCOORD1;
-	//float3 posWS:TEXCOORD2;
+	float3 normal:TEXCOORD1;
+	float3 posWS:TEXCOORD2;
 	float4 posCS : SV_POSITION;
+
 };
 
 sampler2D _MainTex;
 float4 _MainTex_ST;
 float4 _Color;
-float _Metallc, _Roughness;
+float _Metallic, _Roughness, _BaseF0;
 
 VertexOutput VertProgram(VertexInput input)
 {
 	VertexOutput o;
 	o.posCS = UnityObjectToClipPos(input.posOS);
-	o.uv = TRANSFORM_TEX(input.uv, _MainTex);
+	
+	float4 worldPos = mul(unity_ObjectToWorld, input.posOS);
+	o.posWS = worldPos.xyz;
 
+	o.uv = TRANSFORM_TEX(input.uv, _MainTex);
+	o.normal = UnityObjectToWorldNormal(input.normal);
 	return o;
 }
 
 float4 FragProgram(VertexOutput input) : SV_Target
 {
-    
+	
+	PBRSurface pbrSurface = CreateSurface(input.normal,_Color,_Metallic,_Roughness,_BaseF0);
+	PBRLight pbrLight = CreateLight(_LightColor0, _WorldSpaceLightPos0);
+
+	float3 viewDir = normalize(_WorldSpaceCameraPos - input.posWS);
+	float3 halfVector = normalize(viewDir+pbrLight.LightDir);
+	float VdotH = saturate(dot(viewDir, halfVector));
+
+	float3 F = FresnelSchlick(VdotH, pbrSurface.BaseF0);
+	float3 kd = (1 - F) * (1 - pbrSurface.Metallic);
+
+	float3 diffuseColor = CalDirectionDiffuse(pbrSurface.SurfaceColor, kd);
+
 	float4 col = tex2D(_MainTex, input.uv);
-	float4 finalCol = col * _Color;
+	float4 finalCol = col * _Color * float4(diffuseColor,1);
 	return finalCol;
 	
 }

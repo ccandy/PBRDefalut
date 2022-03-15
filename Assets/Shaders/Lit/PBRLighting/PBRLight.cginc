@@ -9,7 +9,7 @@ struct PBRLight
 
 };
 
-PBRLight CreateLight(float3 lightColor, float3 lightPos)
+PBRLight CreateLight(float4 lightColor, float4 lightPos)
 {
 	PBRLight light;
 

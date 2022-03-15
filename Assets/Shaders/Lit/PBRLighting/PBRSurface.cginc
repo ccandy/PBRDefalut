@@ -4,27 +4,25 @@
 struct PBRSurface {
 	
 	float3 NormalWS;
+	float3 BaseF0;
 	float4 SurfaceColor;
 	float SpecStrength;
 	float Shinness;
-	float Metallc;
+	float Metallic;
 	float Roughness;
-
-
 };
 
 
-PBRSurface CreateSurface(float3 normal, float4 color, float spec, float shinness, float metallc, float roughness)
+PBRSurface CreateSurface(float3 normal, float4 color, float metallic, float roughness, float3 basef0)
 {
 	PBRSurface surface;
 
 	surface.NormalWS = normal;
 	surface.SurfaceColor = color;
-	surface.Shinness = shinness;
-	surface.SpecStrength = spec;
 	surface.Roughness = roughness;
-	surface.Metallc = metallc;
-
+	surface.Metallic = metallic;
+	basef0 = lerp(basef0, color, metallic);
+	surface.BaseF0 = basef0;
 
 	return surface;
 

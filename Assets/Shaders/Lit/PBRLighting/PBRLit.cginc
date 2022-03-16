@@ -59,9 +59,11 @@ float4 FragProgram(VertexOutput input) : SV_Target
 	float3 kd = (1 - F) * (1 - pbrSurface.Metallic);
 
 	float3 diffuseColor = CalDirectionDiffuse(pbrSurface, pbrLight, kd);
+	float D = DistributionGGX(pbrSurface, halfVector);
 
 	float4 col = tex2D(_MainTex, input.uv);
 	float4 finalCol = col * _Color * float4(diffuseColor,1);
+	
 	return finalCol * PI;
 	
 }

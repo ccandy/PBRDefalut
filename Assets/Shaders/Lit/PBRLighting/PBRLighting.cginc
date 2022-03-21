@@ -7,7 +7,7 @@ float3 FresnelSchlick(float3 viewDir, float3 halfVector	, float F0)
 {
 
 	float cosTheta = saturate(dot(viewDir, halfVector));
-	float3 F = F0 + (1 - F0) * pow(1 - cosTheta, 5);
+	float3 F = F0 + (1 - F0) * exp2((-5.55473 * cosTheta - 6.98316) * cosTheta);
 	return F;
 }
 
@@ -23,12 +23,12 @@ float DistributionGGX(PBRSurface surface, float3 halfvector)
 {
 
 	float r = surface.Roughness;
-	float r2 = r * r;
+	float r2 = pow(lerp(0.002, 1, r), 2);
 
 	float3 n = surface.NormalWS;
 	float NdotH = saturate(dot(n, halfvector));
 	float temp = (NdotH * NdotH * (r2 - 1) + 1);
-	float result = PI * temp * temp;
+	float result = UNITY_PI * temp * temp;
 
 	return r2 / result;
 
@@ -40,7 +40,7 @@ float SchlickGGX(float3 normal, float3 dir, float roughness)
 	float kdir = (roughness + 1) * (roughness + 1) / 8;
 
 	float NdotD = saturate(dot(normal, dir));
-	float ggx = NdotD / (NdotD * (1 - kdir) + kdir);
+	float ggx = NdotD / lerp(NdotD, 1, kdir);
 	return ggx;
 }
 
@@ -66,7 +66,7 @@ float3 CalcualteSpecColor(PBRSurface surface, PBRLight light, float3 viewDir, fl
 	float3 FDG = F * G * D;
 	FDG /= 4 * NdotV * NdotL;
 
-	return FDG;
+	return saturate(FDG * UNITY_PI * NdotL);
 }
 
 

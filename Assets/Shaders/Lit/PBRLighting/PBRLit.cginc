@@ -62,9 +62,7 @@ float4 FragProgram(VertexOutput input) : SV_Target
 
 	float4 col = tex2D(_MainTex, input.uv);
 	float4 finalCol = col * _Color * float4(diffuseColor + specColor,1);
-	float D = DistributionGGX(pbrSurface, halfVector);
-	float G = GeometrySmith(pbrSurface, pbrLight, viewDir);
-
+	
 	return finalCol * PI;
 	
 }

@@ -5,6 +5,7 @@ struct PBRSurface {
 	
 	float3 NormalWS;
 	float3 BaseF0;
+	float3 kd;
 	float4 SurfaceColor;
 	float SpecStrength;
 	float Shinness;

@@ -6,8 +6,6 @@
 #include "PBRLight.cginc"
 #include "PBRLighting.cginc"
 
-#define PI 3.1415926
-
 struct VertexInput
 {
     float4 posOS : POSITION;
@@ -49,21 +47,16 @@ float4 FragProgram(VertexOutput input) : SV_Target
 	
 	PBRSurface pbrSurface = CreateSurface(input.normal,_Color,_Metallic,_Roughness,_BaseF0);
 	PBRLight pbrLight = CreateLight(_LightColor0, _WorldSpaceLightPos0);
-
-	float3 viewDir = normalize(_WorldSpaceCameraPos - input.posWS);
+	
+	float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - input.posWS);
 	float3 halfVector = normalize(viewDir+pbrLight.LightDir);
 	
-	float3 F = FresnelSchlick(viewDir,halfVector, pbrSurface.BaseF0);
-	float3 kd = (1 - F) * (1 - pbrSurface.Metallic);
-	//pbrSurface.kd = kd;
-
-	float3 diffuseColor = CalDirectionDiffuse(pbrSurface, pbrLight, kd);
-	float3 specColor = CalcualteSpecColor(pbrSurface, pbrLight, viewDir, halfVector);
-
 	float4 col = tex2D(_MainTex, input.uv);
-	float4 finalCol = col * _Color * float4(diffuseColor + specColor,1);
-	
-	return finalCol * PI;
+	float3 directLightColor = CalcualteDirectionLight(pbrSurface, pbrLight, viewDir, halfVector);
+
+	float NdotL = saturate(dot(pbrSurface.NormalWS, pbrLight.LightDir));
+	float4 finalCol = col * float4(pbrLight.LightColor,1) *  float4(directLightColor,1) * UNITY_PI * NdotL;
+	return finalCol;
 	
 }
 

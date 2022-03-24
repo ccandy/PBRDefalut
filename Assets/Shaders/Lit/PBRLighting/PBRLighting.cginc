@@ -1,7 +1,7 @@
 #ifndef PBRCALLIGHTING_INCLUDED
 #define PBRCALLIGHTING_INCLUDED
 
-#define PI 3.1415926
+
 
 float3 FresnelSchlick(float3 viewDir, float3 halfVector	, float F0)
 {
@@ -15,7 +15,7 @@ float3 CalDirectionDiffuse(PBRSurface surface, PBRLight light, float3 kd)
 {
 	
 	float NdotL = saturate(dot(surface.NormalWS, light.LightDir));
-	float3 diffuseColor = (surface.SurfaceColor.rgb / PI) * kd * NdotL;
+	float3 diffuseColor = (surface.SurfaceColor.rgb / UNITY_PI) * kd * NdotL;
 	return diffuseColor;
 }
 
@@ -23,15 +23,18 @@ float DistributionGGX(PBRSurface surface, float3 halfvector)
 {
 
 	float r = surface.Roughness;
-	float r2 = pow(lerp(0.002, 1, r), 2);
+	float r2 = r * r;
 
 	float3 n = surface.NormalWS;
-	float NdotH = saturate(dot(n, halfvector));
+	float NdotH = max(saturate(dot(n, halfvector)), 0.00001);
 	float temp = (NdotH * NdotH * (r2 - 1) + 1);
 	float result = UNITY_PI * temp * temp;
 
-	return r2 / result;
+	//return r2 / result;
+	float lerpSquareRoughness = pow(lerp(0.002, 1, r), 2);
+	float D = lerpSquareRoughness / (pow((pow(NdotH, 2) * (lerpSquareRoughness - 1) + 1), 2) * UNITY_PI);
 
+	return D;
 }
 
 
@@ -67,6 +70,18 @@ float3 CalcualteSpecColor(PBRSurface surface, PBRLight light, float3 viewDir, fl
 	FDG /= 4 * NdotV * NdotL;
 
 	return saturate(FDG * UNITY_PI * NdotL);
+}
+
+
+float3 CalcualteDirectionLight(PBRSurface surface, PBRLight light, float3 viewDir, float3 halfVector) 
+{
+	float3 F = FresnelSchlick(viewDir, halfVector, surface.BaseF0);
+	float3 kd = (1 - F) * (1 - surface.Metallic);
+
+	float3 diffuseColor = CalDirectionDiffuse(surface, light, kd);
+	float3 specColor = CalcualteSpecColor(surface, light, viewDir, halfVector);
+
+	return diffuseColor + specColor;
 }
 
 

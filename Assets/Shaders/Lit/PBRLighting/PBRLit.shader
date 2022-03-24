@@ -3,7 +3,7 @@ Shader "PBRDefault/PBRLit"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _Metallic("Metallc", Range(0,1)) = 1
+        _Metallic("Metallic", Range(0,1)) = 1
         _Roughness("Rougnness", Range(0,1)) = 1
         _Color("Color", color) = (1,1,1,1)
         _BaseF0("Base F0", Range(0,1)) = 0.04

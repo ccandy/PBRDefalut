@@ -14,16 +14,17 @@ struct PBRSurface {
 };
 
 
-PBRSurface CreateSurface(float3 normal, float4 color, float metallic, float roughness, float3 basef0)
+PBRSurface CreateSurface(float3 normal, float4 color, float4 texColor, float metallic, float roughness)
 {
 	PBRSurface surface;
 
 	surface.NormalWS = normal;
-	surface.SurfaceColor = color;
+	surface.SurfaceColor = texColor* color;
 	surface.Roughness = roughness;
 	surface.Metallic = metallic;
-	basef0 = lerp(basef0, color, metallic);
-	surface.BaseF0 = basef0;
+
+	float3 F0 = lerp(unity_ColorSpaceDielectricSpec.rgb, surface.SurfaceColor, metallic);
+	surface.BaseF0 = F0;
 
 	return surface;
 

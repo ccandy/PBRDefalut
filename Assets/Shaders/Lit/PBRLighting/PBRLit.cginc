@@ -2,6 +2,7 @@
 #define PBRsLIGHTING_INCLUDED
 
 #include "UnityLightingCommon.cginc"
+#include "UnityStandardBRDF.cginc"
 #include "PBRSurface.cginc"
 #include "PBRLight.cginc"
 #include "PBRLighting.cginc"
@@ -27,7 +28,7 @@ struct VertexOutput
 sampler2D _MainTex;
 float4 _MainTex_ST;
 float4 _Color;
-float _Metallic, _Roughness, _BaseF0;
+float _Metallic, _Roughness;
 
 VertexOutput VertProgram(VertexInput input)
 {
@@ -44,18 +45,22 @@ VertexOutput VertProgram(VertexInput input)
 
 float4 FragProgram(VertexOutput input) : SV_Target
 {
+	float4 col = tex2D(_MainTex, input.uv);
 	
-	PBRSurface pbrSurface = CreateSurface(input.normal,_Color,_Metallic,_Roughness,_BaseF0);
+	PBRSurface pbrSurface = CreateSurface(input.normal,_Color, col, _Metallic,_Roughness);
 	PBRLight pbrLight = CreateLight(_LightColor0, _WorldSpaceLightPos0);
 	
 	float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - input.posWS);
 	float3 halfVector = normalize(viewDir+pbrLight.LightDir);
 	
-	float4 col = tex2D(_MainTex, input.uv);
+	
 	float3 directLightColor = CalcualteDirectionLight(pbrSurface, pbrLight, viewDir, halfVector);
+	float3 inDirectLightColor = CalcualteInDirectionLight(pbrSurface, pbrLight, viewDir);
+
+	return float4(inDirectLightColor, 1);
 
 	float NdotL = saturate(dot(pbrSurface.NormalWS, pbrLight.LightDir));
-	float4 finalCol = col * float4(pbrLight.LightColor,1) *  float4(directLightColor,1) * UNITY_PI * NdotL;
+	float4 finalCol = pbrSurface.SurfaceColor * float4(pbrLight.LightColor,1) *  float4(directLightColor + inDirectLightColor,1) * UNITY_PI * NdotL;
 	return finalCol;
 	
 }
